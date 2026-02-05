@@ -1,0 +1,36 @@
+{
+  "name": "picross-image-processor",
+  "version": "1.0.0",
+  "description": "A library to convert images to picross board representations by detecting contours and color changes",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "picross",
+    "nonogram",
+    "image-processing",
+    "canvas"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "canvas": "^2.11.2"
+  },
+  "peerDependenciesMeta": {
+    "canvas": {
+      "optional": true
+    }
+  }
+}
+
