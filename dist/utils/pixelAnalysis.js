@@ -1,14 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPixelData = getPixelData;
-exports.isOpaque = isOpaque;
-exports.colorDifference = colorDifference;
-exports.hasTransparentNeighbor = hasTransparentNeighbor;
-exports.hasSignificantColorChange = hasSignificantColorChange;
 /**
  * Get pixel data from ImageData at a specific row and column
  */
-function getPixelData(data, boardSize, row, col) {
+export function getPixelData(data, boardSize, row, col) {
     if (row < 0 || row >= boardSize || col < 0 || col >= boardSize) {
         return { r: 0, g: 0, b: 0, a: 0 };
     }
@@ -23,14 +16,14 @@ function getPixelData(data, boardSize, row, col) {
 /**
  * Check if a pixel is opaque based on alpha threshold
  */
-function isOpaque(data, boardSize, row, col, alphaThreshold = 128) {
+export function isOpaque(data, boardSize, row, col, alphaThreshold = 128) {
     const pixel = getPixelData(data, boardSize, row, col);
     return pixel.a > alphaThreshold;
 }
 /**
  * Calculate color difference between two pixels using Euclidean distance
  */
-function colorDifference(pixel1, pixel2) {
+export function colorDifference(pixel1, pixel2) {
     // If either pixel is transparent, return 0
     if (pixel1.a <= 128 || pixel2.a <= 128) {
         return 0;
@@ -43,7 +36,7 @@ function colorDifference(pixel1, pixel2) {
 /**
  * Check if pixel has at least one transparent neighbor
  */
-function hasTransparentNeighbor(data, boardSize, row, col, alphaThreshold = 128) {
+export function hasTransparentNeighbor(data, boardSize, row, col, alphaThreshold = 128) {
     const neighbors = [
         [row - 1, col],
         [row + 1, col],
@@ -64,7 +57,7 @@ function hasTransparentNeighbor(data, boardSize, row, col, alphaThreshold = 128)
 /**
  * Check if pixel has significant color change with neighbors
  */
-function hasSignificantColorChange(data, boardSize, row, col, colorThreshold = 80, alphaThreshold = 128) {
+export function hasSignificantColorChange(data, boardSize, row, col, colorThreshold = 80, alphaThreshold = 128) {
     if (!isOpaque(data, boardSize, row, col, alphaThreshold)) {
         return false;
     }

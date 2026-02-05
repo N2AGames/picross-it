@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculateBoundingBox = calculateBoundingBox;
 /**
  * Calculate bounding box of opaque pixels in image data
  */
-function calculateBoundingBox(data, width, height, alphaThreshold = 128) {
+export function calculateBoundingBox(data, width, height, alphaThreshold = 128) {
     let minX = width;
     let minY = height;
     let maxX = 0;

@@ -1,15 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.processImageData = processImageData;
-exports.processCanvasImage = processCanvasImage;
-exports.processImageUrl = processImageUrl;
-exports.processImageFile = processImageFile;
-const pixelAnalysis_1 = require("./utils/pixelAnalysis");
-const imageAnalysis_1 = require("./utils/imageAnalysis");
+import { isOpaque, hasTransparentNeighbor, hasSignificantColorChange, } from './utils/pixelAnalysis';
+import { calculateBoundingBox } from './utils/imageAnalysis';
 /**
  * Process ImageData directly
  */
-function processImageData(imageData, config) {
+export function processImageData(imageData, config) {
     const boardSize = config?.boardSize || 16;
     const colorThreshold = config?.colorThreshold || 80;
     const alphaThreshold = config?.alphaThreshold || 128;
@@ -17,16 +11,16 @@ function processImageData(imageData, config) {
     const width = imageData.width;
     const height = imageData.height;
     // Step 1: Find bounding box
-    const bbox = (0, imageAnalysis_1.calculateBoundingBox)(data, width, height, alphaThreshold);
+    const bbox = calculateBoundingBox(data, width, height, alphaThreshold);
     // Step 2: Create scaled image data
     const scaledData = scaleImageData(data, width, height, bbox, boardSize);
     // Step 3: Convert to binary matrix
     const board = Array.from({ length: boardSize }, () => Array(boardSize).fill(0));
     for (let row = 0; row < boardSize; row++) {
         for (let col = 0; col < boardSize; col++) {
-            const isOpaquePixel = (0, pixelAnalysis_1.isOpaque)(scaledData, boardSize, row, col, alphaThreshold);
-            const hasTransparent = (0, pixelAnalysis_1.hasTransparentNeighbor)(scaledData, boardSize, row, col, alphaThreshold);
-            const hasColorChange = (0, pixelAnalysis_1.hasSignificantColorChange)(scaledData, boardSize, row, col, colorThreshold, alphaThreshold);
+            const isOpaquePixel = isOpaque(scaledData, boardSize, row, col, alphaThreshold);
+            const hasTransparent = hasTransparentNeighbor(scaledData, boardSize, row, col, alphaThreshold);
+            const hasColorChange = hasSignificantColorChange(scaledData, boardSize, row, col, colorThreshold, alphaThreshold);
             if (isOpaquePixel && (hasTransparent || hasColorChange)) {
                 board[row][col] = 1;
             }
@@ -69,7 +63,7 @@ function scaleImageData(sourceData, sourceWidth, sourceHeight, bbox, boardSize) 
 /**
  * Process an image using Canvas API (browser compatible)
  */
-async function processCanvasImage(image, config) {
+export async function processCanvasImage(image, config) {
     const canvas = new OffscreenCanvas(image.width, image.height);
     const ctx = canvas.getContext('2d');
     if (!ctx)
@@ -81,7 +75,7 @@ async function processCanvasImage(image, config) {
 /**
  * Process an image from a data URL (browser compatible)
  */
-async function processImageUrl(imageUrl, config) {
+export async function processImageUrl(imageUrl, config) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = 'Anonymous';
@@ -102,7 +96,7 @@ async function processImageUrl(imageUrl, config) {
  * Process using canvas library (Node.js)
  * This will use the canvas package if available
  */
-async function processImageFile(filePath, config) {
+export async function processImageFile(filePath, config) {
     try {
         // Try to use canvas library if available
         const canvas = require('canvas');
