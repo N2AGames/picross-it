@@ -1,5 +1,7 @@
 import { ProcessingConfig, ProcessingResult } from './types';
 import {
+  getColorIndex,
+  getPixelData,
   isOpaque,
   hasTransparentNeighbor,
   hasSignificantColorChange,
@@ -16,6 +18,7 @@ export function processImageData(
   const boardSize = config?.boardSize || 16;
   const colorThreshold = config?.colorThreshold || 80;
   const alphaThreshold = config?.alphaThreshold || 128;
+  const colorMode = config?.colorMode || false;
 
   const data = imageData.data;
   const width = imageData.width;
@@ -52,7 +55,12 @@ export function processImageData(
       );
 
       if (isOpaquePixel && (hasTransparent || hasColorChange)) {
-        board[row][col] = 1;
+        if (colorMode) {
+          const pixel = getPixelData(scaledData, boardSize, row, col);
+          board[row][col] = getColorIndex(pixel, alphaThreshold);
+        } else {
+          board[row][col] = 1;
+        }
       }
     }
   }

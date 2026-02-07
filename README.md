@@ -61,7 +61,8 @@ import { processImageUrl, ProcessingConfig } from 'picross-image-processor';
 const config: ProcessingConfig = {
   boardSize: 32,           // Default: 16
   colorThreshold: 100,     // Default: 80 (0-255)
-  alphaThreshold: 128      // Default: 128 (0-255)
+  alphaThreshold: 128,     // Default: 128 (0-255)
+  colorMode: true          // Default: false
 };
 
 const result = await processImageUrl(imageUrl, config);
@@ -74,6 +75,7 @@ const result = await processImageUrl(imageUrl, config);
 - **boardSize** (number, default: 16): The size of the output picross board (NxN)
 - **colorThreshold** (number, default: 80): The minimum color difference to detect edges (0-255, lower = more sensitive)
 - **alphaThreshold** (number, default: 128): The minimum alpha value to consider a pixel opaque (0-255)
+- **colorMode** (boolean, default: false): When true, board values are 1..255 color indices instead of 1
 
 ## How It Works
 
@@ -81,7 +83,7 @@ const result = await processImageUrl(imageUrl, config);
 2. **Crop and Scale**: Crops the image to the bounding box and scales it to the board size
 3. **Contour Detection**: Marks pixels adjacent to transparent areas
 4. **Color Change Detection**: Marks pixels with significant color differences to neighbors
-5. **Binary Board**: Creates a 2D array where 1 = filled cell, 0 = empty cell
+5. **Binary Board**: Creates a 2D array where 1 = filled cell, 0 = empty cell (or 1..255 in color mode)
 
 ## API Reference
 
@@ -107,7 +109,7 @@ The `ProcessingResult` contains:
 
 ```typescript
 {
-  board: number[][];  // 2D array of 0s and 1s
+  board: number[][];  // 2D array of 0/1 (mono) or 0/1..255 (color mode)
   boardSize: number;  // Size of the board
 }
 ```
@@ -128,8 +130,20 @@ function drawBoard(result: ProcessingResult) {
     for (let col = 0; col < boardSize; col++) {
       const x = col * cellSize;
       const y = row * cellSize;
-      
-      ctx.fillStyle = board[row][col] === 1 ? '#333' : '#fff';
+
+      const value = board[row][col];
+      if (value > 0 && value !== 1) {
+        const egaPalette = [
+          '#000000', '#0000aa', '#00aa00', '#00aaaa',
+          '#aa0000', '#aa00aa', '#aa5500', '#aaaaaa',
+          '#555555', '#5555ff', '#55ff55', '#55ffff',
+          '#ff5555', '#ff55ff', '#ffff55', '#ffffff',
+        ];
+        const colorIndex = (value - 1) % egaPalette.length;
+        ctx.fillStyle = egaPalette[colorIndex];
+      } else {
+        ctx.fillStyle = value === 1 ? '#333' : '#fff';
+      }
       ctx.fillRect(x, y, cellSize, cellSize);
       ctx.strokeStyle = '#ccc';
       ctx.strokeRect(x, y, cellSize, cellSize);
