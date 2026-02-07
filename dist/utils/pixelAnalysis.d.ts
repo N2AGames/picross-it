@@ -12,6 +12,10 @@ export declare function isOpaque(data: Uint8ClampedArray, boardSize: number, row
  */
 export declare function colorDifference(pixel1: PixelData, pixel2: PixelData): number;
 /**
+ * Quantize a pixel color into a 1..255 index using RGB332
+ */
+export declare function getColorIndex(pixel: PixelData, alphaThreshold?: number): number;
+/**
  * Check if pixel has at least one transparent neighbor
  */
 export declare function hasTransparentNeighbor(data: Uint8ClampedArray, boardSize: number, row: number, col: number, alphaThreshold?: number): boolean;

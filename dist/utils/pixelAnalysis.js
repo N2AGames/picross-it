@@ -34,6 +34,19 @@ export function colorDifference(pixel1, pixel2) {
     return Math.sqrt(dr * dr + dg * dg + db * db);
 }
 /**
+ * Quantize a pixel color into a 1..255 index using RGB332
+ */
+export function getColorIndex(pixel, alphaThreshold = 128) {
+    if (pixel.a <= alphaThreshold) {
+        return 0;
+    }
+    const r3 = pixel.r >> 5;
+    const g3 = pixel.g >> 5;
+    const b2 = pixel.b >> 6;
+    const index = (r3 << 5) | (g3 << 2) | b2;
+    return index === 0 ? 1 : index;
+}
+/**
  * Check if pixel has at least one transparent neighbor
  */
 export function hasTransparentNeighbor(data, boardSize, row, col, alphaThreshold = 128) {

@@ -14,6 +14,7 @@ export interface ProcessingConfig {
     boardSize?: number;
     colorThreshold?: number;
     alphaThreshold?: number;
+    colorMode?: boolean;
 }
 /**
  * Result of image processing containing the picross board
