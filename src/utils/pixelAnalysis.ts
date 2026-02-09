@@ -60,7 +60,7 @@ export function colorToIndex(
   alphaThreshold: number = 128
 ): number {
   if (pixel.a <= alphaThreshold) {
-    return 0;
+    return -1;
   }
 
   const r3 = pixel.r >> 5;
@@ -68,14 +68,14 @@ export function colorToIndex(
   const b2 = pixel.b >> 6;
   const index = (r3 << 5) | (g3 << 2) | b2;
 
-  return index === 0 ? 1 : index;
+  return index;
 }
 
 /**
  * Expand a 0..255 index back to an RGBA pixel using RGB332
  */
 export function indexToColor(index: number): PixelData {
-  if (index <= 0) {
+  if (index < 0) {
     return { r: 0, g: 0, b: 0, a: 0 };
   }
 

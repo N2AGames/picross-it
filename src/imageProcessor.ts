@@ -29,7 +29,7 @@ export function processImageData(
 
   // Step 3: Convert to binary matrix
   const board: number[][] = Array.from({ length: boardSize }, () =>
-    Array(boardSize).fill(0)
+    Array(boardSize).fill(-1)
   );
 
   for (let row = 0; row < boardSize; row++) {
@@ -41,7 +41,7 @@ export function processImageData(
           const pixel = getPixelData(scaledData, boardSize, row, col);
           board[row][col] = colorToIndex(pixel, alphaThreshold);
         } else {
-          board[row][col] = 1;
+          board[row][col] = 255;
         }
       }
     }

@@ -22,7 +22,7 @@ export interface ProcessingConfig {
  * Result of image processing containing the picross board
  */
 export interface ProcessingResult {
-  // 0 = empty, 1 = filled (monochrome) or 1..255 (color mode)
+  // -1 = transparent, 0..255 = opaque (255 used for mono mode)
   board: number[][];
   boardSize: number;
 }

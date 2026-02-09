@@ -40,6 +40,10 @@ function buildSolidMask(size: number): number[][] {
   return Array.from({ length: size }, () => Array(size).fill(1));
 }
 
+function buildMonoBoard(mask: number[][]): number[][] {
+  return mask.map((row) => row.map((cell) => (cell === 1 ? 255 : -1)));
+}
+
 function createImageDataFromMask(mask: number[][]): ImageData {
   const size = mask.length;
   const data = new Uint8ClampedArray(size * size * 4);
@@ -80,7 +84,7 @@ function colorIndexFromRowCol(row: number, col: number): number {
 function buildColorBoard(mask: number[][]): number[][] {
   return mask.map((row, rowIndex) =>
     row.map((cell, colIndex) =>
-      cell === 1 ? colorIndexFromRowCol(rowIndex, colIndex) : 0
+      cell === 1 ? colorIndexFromRowCol(rowIndex, colIndex) : -1
     )
   );
 }
@@ -99,7 +103,7 @@ function tryLoadCanvas(): CanvasModule | null {
 }
 
 function rgbFromColorIndex(index: number): { r: number; g: number; b: number } {
-  if (index <= 0) {
+  if (index < 0) {
     return { r: 255, g: 255, b: 255 };
   }
 
@@ -137,12 +141,12 @@ function writeBoardPng(
       const value = board[row][col];
       let fill = 'white';
 
-      if (options?.colorMode) {
-        const { r, g, b } = rgbFromColorIndex(value);
-        fill = `rgb(${r}, ${g}, ${b})`;
-      } else if (value === 1) {
-        fill = 'black';
-      }
+          if (options?.colorMode) {
+            const { r, g, b } = rgbFromColorIndex(value);
+            fill = `rgb(${r}, ${g}, ${b})`;
+          } else if (value >= 0) {
+            fill = 'black';
+          }
 
       ctx.fillStyle = fill;
       ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
@@ -174,11 +178,12 @@ describe('processImageData', () => {
     const size = 16;
     const mask = buildSpiralMask(size);
     const imageData = createImageDataFromMask(mask);
+    const expected = buildMonoBoard(mask);
 
     const result = processImageData(imageData, { boardSize: size });
 
     expect(result.boardSize).toBe(size);
-    expect(result.board).toEqual(mask);
+    expect(result.board).toEqual(expected);
   });
 
   it('creates a color picross matrix from a complex synthetic image', () => {
@@ -200,17 +205,19 @@ describe('processImageData', () => {
     const size = 12;
     const mask = buildSolidMask(size);
     const imageData = createImageDataFromMask(mask);
+    const expected = buildMonoBoard(mask);
 
     const result = processImageData(imageData, { boardSize: size });
 
     expect(result.boardSize).toBe(size);
-    expect(result.board).toEqual(mask);
+    expect(result.board).toEqual(expected);
   });
 
   it('writes a visual PNG artifact for inspection', () => {
     const size = 16;
     const mask = buildSpiralMask(size);
     const imageData = createImageDataFromMask(mask);
+    const expected = buildMonoBoard(mask);
 
     const monoResult = processImageData(imageData, { boardSize: size });
     const colorResult = processImageData(imageData, {
@@ -218,7 +225,7 @@ describe('processImageData', () => {
       colorMode: true,
     });
 
-    expect(monoResult.board).toEqual(mask);
+    expect(monoResult.board).toEqual(expected);
 
     const artifactsDir = path.resolve(__dirname, 'artifacts');
     writeImageDataPng(

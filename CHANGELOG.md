@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0 - 2026-02-09
+- Updated board values: transparent = -1, opaque = 0..255 (mono uses 255).
+- Allowed color index 0 for opaque pixels in color mode.
+- Updated tests and documentation for the new value mapping.
+
 ## 1.2.0 - 2026-02-09
 - Updated processing to map all non-transparent pixels instead of only edges.
 - Added a solid-image test to ensure full pixel coverage.
