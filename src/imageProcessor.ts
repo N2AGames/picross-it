@@ -1,6 +1,6 @@
 import { ProcessingConfig, ProcessingResult } from './types';
 import {
-  getColorIndex,
+  colorToIndex,
   getPixelData,
   isOpaque,
   hasTransparentNeighbor,
@@ -57,7 +57,7 @@ export function processImageData(
       if (isOpaquePixel && (hasTransparent || hasColorChange)) {
         if (colorMode) {
           const pixel = getPixelData(scaledData, boardSize, row, col);
-          board[row][col] = getColorIndex(pixel, alphaThreshold);
+          board[row][col] = colorToIndex(pixel, alphaThreshold);
         } else {
           board[row][col] = 1;
         }
