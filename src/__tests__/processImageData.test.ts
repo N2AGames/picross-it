@@ -36,6 +36,10 @@ function buildSpiralMask(size: number): number[][] {
   return mask;
 }
 
+function buildSolidMask(size: number): number[][] {
+  return Array.from({ length: size }, () => Array(size).fill(1));
+}
+
 function createImageDataFromMask(mask: number[][]): ImageData {
   const size = mask.length;
   const data = new Uint8ClampedArray(size * size * 4);
@@ -190,6 +194,17 @@ describe('processImageData', () => {
 
     expect(result.boardSize).toBe(size);
     expect(result.board).toEqual(expected);
+  });
+
+  it('includes all opaque pixels for solid images', () => {
+    const size = 12;
+    const mask = buildSolidMask(size);
+    const imageData = createImageDataFromMask(mask);
+
+    const result = processImageData(imageData, { boardSize: size });
+
+    expect(result.boardSize).toBe(size);
+    expect(result.board).toEqual(mask);
   });
 
   it('writes a visual PNG artifact for inspection', () => {

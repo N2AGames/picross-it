@@ -1,6 +1,6 @@
 # Picross Image Processor
 
-A TypeScript library to convert images to picross (nonogram) board representations by detecting contours and color changes.
+A TypeScript library to convert images to picross (nonogram) board representations by mapping all non-transparent pixels.
 
 ## Installation
 
@@ -60,7 +60,7 @@ import { processImageUrl, ProcessingConfig } from 'picross-image-processor';
 
 const config: ProcessingConfig = {
   boardSize: 32,           // Default: 16
-  colorThreshold: 100,     // Default: 80 (0-255)
+  colorThreshold: 100,     // Default: 80 (0-255, currently unused)
   alphaThreshold: 128,     // Default: 128 (0-255)
   colorMode: true          // Default: false
 };
@@ -73,7 +73,7 @@ const result = await processImageUrl(imageUrl, config);
 ### `ProcessingConfig`
 
 - **boardSize** (number, default: 16): The size of the output picross board (NxN)
-- **colorThreshold** (number, default: 80): The minimum color difference to detect edges (0-255, lower = more sensitive)
+- **colorThreshold** (number, default: 80): Reserved for future edge detection (currently unused)
 - **alphaThreshold** (number, default: 128): The minimum alpha value to consider a pixel opaque (0-255)
 - **colorMode** (boolean, default: false): When true, board values are 1..255 color indices instead of 1
 
@@ -81,9 +81,8 @@ const result = await processImageUrl(imageUrl, config);
 
 1. **Bounding Box Detection**: Finds the smallest rectangle containing all opaque pixels
 2. **Crop and Scale**: Crops the image to the bounding box and scales it to the board size
-3. **Contour Detection**: Marks pixels adjacent to transparent areas
-4. **Color Change Detection**: Marks pixels with significant color differences to neighbors
-5. **Binary Board**: Creates a 2D array where 1 = filled cell, 0 = empty cell (or 1..255 in color mode)
+3. **Opaque Mapping**: Marks every non-transparent pixel as filled
+4. **Binary Board**: Creates a 2D array where 1 = filled cell, 0 = empty cell (or 1..255 in color mode)
 
 ## API Reference
 
