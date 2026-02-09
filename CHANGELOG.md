@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2 - 2026-02-09
+- Added RGB332 helpers to convert pixel color to 0..255 index and back.
+- Refactored picross color conversion to use the new helper.
+
 ## 1.1.1 - 2026-02-08
 - Added visual test artifacts (PNG) for board outputs when canvas is available.
 - Added saving of the synthetic source image used in visual tests.
