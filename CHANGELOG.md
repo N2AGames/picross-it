@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 - 2026-02-09
+- Updated processing to map all non-transparent pixels instead of only edges.
+- Added a solid-image test to ensure full pixel coverage.
+
 ## 1.1.2 - 2026-02-09
 - Added RGB332 helpers to convert pixel color to 0..255 index and back.
 - Refactored picross color conversion to use the new helper.
