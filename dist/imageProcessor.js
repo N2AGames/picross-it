@@ -1,4 +1,4 @@
-import { getColorIndex, getPixelData, isOpaque, hasTransparentNeighbor, hasSignificantColorChange, } from './utils/pixelAnalysis';
+import { colorToIndex, getPixelData, isOpaque, hasTransparentNeighbor, hasSignificantColorChange, } from './utils/pixelAnalysis';
 import { calculateBoundingBox } from './utils/imageAnalysis';
 /**
  * Process ImageData directly
@@ -25,7 +25,7 @@ export function processImageData(imageData, config) {
             if (isOpaquePixel && (hasTransparent || hasColorChange)) {
                 if (colorMode) {
                     const pixel = getPixelData(scaledData, boardSize, row, col);
-                    board[row][col] = getColorIndex(pixel, alphaThreshold);
+                    board[row][col] = colorToIndex(pixel, alphaThreshold);
                 }
                 else {
                     board[row][col] = 1;

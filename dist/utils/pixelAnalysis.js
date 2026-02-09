@@ -34,9 +34,9 @@ export function colorDifference(pixel1, pixel2) {
     return Math.sqrt(dr * dr + dg * dg + db * db);
 }
 /**
- * Quantize a pixel color into a 1..255 index using RGB332
+ * Quantize a pixel color into a 0..255 index using RGB332
  */
-export function getColorIndex(pixel, alphaThreshold = 128) {
+export function colorToIndex(pixel, alphaThreshold = 128) {
     if (pixel.a <= alphaThreshold) {
         return 0;
     }
@@ -45,6 +45,28 @@ export function getColorIndex(pixel, alphaThreshold = 128) {
     const b2 = pixel.b >> 6;
     const index = (r3 << 5) | (g3 << 2) | b2;
     return index === 0 ? 1 : index;
+}
+/**
+ * Expand a 0..255 index back to an RGBA pixel using RGB332
+ */
+export function indexToColor(index) {
+    if (index <= 0) {
+        return { r: 0, g: 0, b: 0, a: 0 };
+    }
+    const clamped = Math.max(0, Math.min(255, Math.floor(index)));
+    const r3 = (clamped >> 5) & 0x07;
+    const g3 = (clamped >> 2) & 0x07;
+    const b2 = clamped & 0x03;
+    const r8 = (r3 << 5) | (r3 << 2) | (r3 >> 1);
+    const g8 = (g3 << 5) | (g3 << 2) | (g3 >> 1);
+    const b8 = (b2 << 6) | (b2 << 4) | (b2 << 2) | b2;
+    return { r: r8, g: g8, b: b8, a: 255 };
+}
+/**
+ * Backwards-compatible alias
+ */
+export function getColorIndex(pixel, alphaThreshold = 128) {
+    return colorToIndex(pixel, alphaThreshold);
 }
 /**
  * Check if pixel has at least one transparent neighbor
