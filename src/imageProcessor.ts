@@ -75,7 +75,7 @@ function buildCellData(value: number, colorMode: boolean): PicrossCellData {
 
   return {
     color: getCellColor(value, colorMode),
-    enabled: isFilled,
+    enabled: true,
     pushed: false,
     correct: isFilled,
   };
@@ -83,7 +83,7 @@ function buildCellData(value: number, colorMode: boolean): PicrossCellData {
 
 function getCellColor(value: number, colorMode: boolean): string {
   if (value < 0) {
-    return '#ffffff';
+    return '#d3d3d3'; // light gray
   }
 
   if (!colorMode) {
