@@ -1,3 +1,5 @@
+import { PicrossBoardData } from './picross-board-data.model';
+
 /**
  * Represents pixel data with RGBA values
  */
@@ -22,7 +24,6 @@ export interface ProcessingConfig {
  * Result of image processing containing the picross board
  */
 export interface ProcessingResult {
-  // -1 = transparent, 0..255 = opaque (255 used for mono mode)
-  board: number[][];
+  board: PicrossBoardData;
   boardSize: number;
 }

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0 - 2026-02-11
+- Changed processing result board to PicrossBoardData.
+- Added row/column hint generation for picross clues.
+- Updated tests and README for the new board output.
+
 ## 1.3.0 - 2026-02-09
 - Updated board values: transparent = -1, opaque = 0..255 (mono uses 255).
 - Allowed color index 0 for opaque pixels in color mode.

@@ -1,7 +1,9 @@
 import { ProcessingConfig, ProcessingResult } from './types';
+import { PicrossBoardData, PicrossCellData, PicrossRowData } from './picross-board-data.model';
 import {
   colorToIndex,
   getPixelData,
+  indexToColor,
   isOpaque,
 } from './utils/pixelAnalysis';
 import { calculateBoundingBox } from './utils/imageAnalysis';
@@ -28,7 +30,7 @@ export function processImageData(
   const scaledData = scaleImageData(data, width, height, bbox, boardSize);
 
   // Step 3: Convert to binary matrix
-  const board: number[][] = Array.from({ length: boardSize }, () =>
+  const boardMatrix: number[][] = Array.from({ length: boardSize }, () =>
     Array(boardSize).fill(-1)
   );
 
@@ -39,18 +41,89 @@ export function processImageData(
       if (isOpaquePixel) {
         if (colorMode) {
           const pixel = getPixelData(scaledData, boardSize, row, col);
-          board[row][col] = colorToIndex(pixel, alphaThreshold);
+          boardMatrix[row][col] = colorToIndex(pixel, alphaThreshold);
         } else {
-          board[row][col] = 255;
+          boardMatrix[row][col] = 255;
         }
       }
     }
   }
 
   return {
-    board,
+    board: buildPicrossBoardData(boardMatrix, colorMode),
     boardSize,
   };
+}
+
+function buildPicrossBoardData(boardMatrix: number[][], colorMode: boolean): PicrossBoardData {
+  const rows: PicrossRowData[] = boardMatrix.map((row) => ({
+    cells: row.map((value) => buildCellData(value, colorMode)),
+  }));
+
+  const rowClues = boardMatrix.map((row) => buildLineClues(row));
+  const columnClues = buildColumnClues(boardMatrix);
+
+  return {
+    rows,
+    rowClues,
+    columnClues,
+  };
+}
+
+function buildCellData(value: number, colorMode: boolean): PicrossCellData {
+  const isFilled = value >= 0;
+
+  return {
+    color: getCellColor(value, colorMode),
+    enabled: isFilled,
+    pushed: false,
+    correct: isFilled,
+  };
+}
+
+function getCellColor(value: number, colorMode: boolean): string {
+  if (value < 0) {
+    return '#ffffff';
+  }
+
+  if (!colorMode) {
+    return '#000000';
+  }
+
+  const { r, g, b } = indexToColor(value);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function buildColumnClues(boardMatrix: number[][]): number[][] {
+  const size = boardMatrix.length;
+  const clues: number[][] = [];
+
+  for (let col = 0; col < size; col++) {
+    const columnValues = boardMatrix.map((row) => row[col]);
+    clues.push(buildLineClues(columnValues));
+  }
+
+  return clues;
+}
+
+function buildLineClues(values: number[]): number[] {
+  const clues: number[] = [];
+  let run = 0;
+
+  for (const value of values) {
+    if (value >= 0) {
+      run += 1;
+    } else if (run > 0) {
+      clues.push(run);
+      run = 0;
+    }
+  }
+
+  if (run > 0) {
+    clues.push(run);
+  }
+
+  return clues.length > 0 ? clues : [0];
 }
 
 /**

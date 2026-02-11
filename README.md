@@ -25,7 +25,7 @@ import { processImageUrl } from 'picross-image-processor';
 
 async function createPicrossBoard() {
   const result = await processImageUrl('https://example.com/pokemon.png');
-  console.log(result.board);      // 16x16 board
+  console.log(result.board.rowClues);      // Row hints
   console.log(result.boardSize);  // 16
 }
 ```
@@ -49,7 +49,7 @@ import { processImageFile } from 'picross-image-processor';
 
 async function processLocalImage() {
   const result = await processImageFile('./pokemon.png');
-  console.log(result.board);
+  console.log(result.board.columnClues);
 }
 ```
 
@@ -108,16 +108,17 @@ The `ProcessingResult` contains:
 
 ```typescript
 {
-  board: number[][];  // 2D array of -1 (transparent) or 0..255 (opaque)
-  boardSize: number;  // Size of the board
+  board: PicrossBoardData;  // Rows + row/column clues
+  boardSize: number;        // Size of the board
 }
 ```
 
 ## Example: Drawing the Board
 
 ```typescript
-function drawBoard(result: ProcessingResult, colorMode = false) {
+function drawBoard(result: ProcessingResult) {
   const { board, boardSize } = result;
+  const { rows } = board;
   const canvas = document.getElementById('board') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d');
   
@@ -130,21 +131,8 @@ function drawBoard(result: ProcessingResult, colorMode = false) {
       const x = col * cellSize;
       const y = row * cellSize;
 
-      const value = board[row][col];
-      if (value < 0) {
-        ctx.fillStyle = '#fff';
-      } else if (colorMode) {
-        const egaPalette = [
-          '#000000', '#0000aa', '#00aa00', '#00aaaa',
-          '#aa0000', '#aa00aa', '#aa5500', '#aaaaaa',
-          '#555555', '#5555ff', '#55ff55', '#55ffff',
-          '#ff5555', '#ff55ff', '#ffff55', '#ffffff',
-        ];
-        const colorIndex = value % egaPalette.length;
-        ctx.fillStyle = egaPalette[colorIndex];
-      } else {
-        ctx.fillStyle = '#333';
-      }
+      const cell = rows[row].cells[col];
+      ctx.fillStyle = cell.enabled ? cell.color : '#fff';
       ctx.fillRect(x, y, cellSize, cellSize);
       ctx.strokeStyle = '#ccc';
       ctx.strokeRect(x, y, cellSize, cellSize);

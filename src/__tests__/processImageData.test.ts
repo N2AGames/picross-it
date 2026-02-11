@@ -1,4 +1,6 @@
 import { processImageData } from '../imageProcessor';
+import { PicrossBoardData } from '../picross-board-data.model';
+import { indexToColor } from '../utils/pixelAnalysis';
 import fs from 'fs';
 import path from 'path';
 
@@ -78,7 +80,7 @@ function colorIndexFromRowCol(row: number, col: number): number {
   const b2 = b >> 6;
   const index = (r3 << 5) | (g3 << 2) | b2;
 
-  return index === 0 ? 1 : index;
+  return index;
 }
 
 function buildColorBoard(mask: number[][]): number[][] {
@@ -87,6 +89,66 @@ function buildColorBoard(mask: number[][]): number[][] {
       cell === 1 ? colorIndexFromRowCol(rowIndex, colIndex) : -1
     )
   );
+}
+
+function buildLineClues(values: number[]): number[] {
+  const clues: number[] = [];
+  let run = 0;
+
+  for (const value of values) {
+    if (value >= 0) {
+      run += 1;
+    } else if (run > 0) {
+      clues.push(run);
+      run = 0;
+    }
+  }
+
+  if (run > 0) {
+    clues.push(run);
+  }
+
+  return clues.length > 0 ? clues : [0];
+}
+
+function buildColumnClues(board: number[][]): number[][] {
+  const size = board.length;
+  const clues: number[][] = [];
+
+  for (let col = 0; col < size; col++) {
+    const columnValues = board.map((row) => row[col]);
+    clues.push(buildLineClues(columnValues));
+  }
+
+  return clues;
+}
+
+function buildCellColor(value: number, colorMode: boolean): string {
+  if (value < 0) {
+    return '#ffffff';
+  }
+
+  if (!colorMode) {
+    return '#000000';
+  }
+
+  const { r, g, b } = indexToColor(value);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function buildBoardData(board: number[][], colorMode: boolean): PicrossBoardData {
+  return {
+    rows: board.map((row) => ({
+      cells: row.map((value) => ({
+        color: buildCellColor(value, colorMode),
+        enabled: value >= 0,
+        pushed: false,
+        correct: value >= 0,
+      })),
+    })),
+    rowClues: board.map((row) => buildLineClues(row)),
+    columnClues: buildColumnClues(board),
+  };
 }
 
 type CanvasModule = {
@@ -183,7 +245,7 @@ describe('processImageData', () => {
     const result = processImageData(imageData, { boardSize: size });
 
     expect(result.boardSize).toBe(size);
-    expect(result.board).toEqual(expected);
+    expect(result.board).toEqual(buildBoardData(expected, false));
   });
 
   it('creates a color picross matrix from a complex synthetic image', () => {
@@ -198,7 +260,7 @@ describe('processImageData', () => {
     });
 
     expect(result.boardSize).toBe(size);
-    expect(result.board).toEqual(expected);
+    expect(result.board).toEqual(buildBoardData(expected, true));
   });
 
   it('includes all opaque pixels for solid images', () => {
@@ -210,7 +272,35 @@ describe('processImageData', () => {
     const result = processImageData(imageData, { boardSize: size });
 
     expect(result.boardSize).toBe(size);
-    expect(result.board).toEqual(expected);
+    expect(result.board).toEqual(buildBoardData(expected, false));
+  });
+
+  it('generates row and column hints for a custom pattern', () => {
+    const mask = [
+      [1, 1, 0, 1, 0],
+      [0, 0, 0, 0, 0],
+      [1, 1, 1, 0, 1],
+      [0, 1, 0, 1, 1],
+      [0, 0, 0, 1, 1],
+    ];
+    const imageData = createImageDataFromMask(mask);
+
+    const result = processImageData(imageData, { boardSize: 5 });
+
+    expect(result.board.rowClues).toEqual([
+      [2, 1],
+      [0],
+      [3, 1],
+      [1, 2],
+      [2],
+    ]);
+    expect(result.board.columnClues).toEqual([
+      [1, 1],
+      [1, 2],
+      [1],
+      [1, 2],
+      [3],
+    ]);
   });
 
   it('writes a visual PNG artifact for inspection', () => {
@@ -225,7 +315,7 @@ describe('processImageData', () => {
       colorMode: true,
     });
 
-    expect(monoResult.board).toEqual(expected);
+    expect(monoResult.board).toEqual(buildBoardData(expected, false));
 
     const artifactsDir = path.resolve(__dirname, 'artifacts');
     writeImageDataPng(
@@ -233,11 +323,11 @@ describe('processImageData', () => {
       path.join(artifactsDir, 'processImageData-spiral-source.png')
     );
     writeBoardPng(
-      monoResult.board,
+      expected,
       path.join(artifactsDir, 'processImageData-spiral-mono.png')
     );
     writeBoardPng(
-      colorResult.board,
+      buildColorBoard(mask),
       path.join(artifactsDir, 'processImageData-spiral-color.png'),
       { colorMode: true }
     );

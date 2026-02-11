@@ -1,5 +1,6 @@
 // Main entry point
 export * from './types';
+export * from './picross-board-data.model';
 export {
   processImageData,
   processCanvasImage,
