@@ -1,6 +1,10 @@
 # Changelog
 
 ## 1.4.0 - 2026-02-11
+- Change the color for empty cells to lightgrey.
+- Set all the cells enabled by default.
+
+## 1.4.0 - 2026-02-11
 - Changed processing result board to PicrossBoardData.
 - Added row/column hint generation for picross clues.
 - Updated tests and README for the new board output.
