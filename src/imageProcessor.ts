@@ -78,6 +78,7 @@ function buildCellData(value: number, colorMode: boolean): PicrossCellData {
     enabled: true,
     pushed: false,
     correct: isFilled,
+    marked: false
   };
 }
 

@@ -145,6 +145,7 @@ function buildBoardData(board: number[][], colorMode: boolean): PicrossBoardData
         enabled: true,
         pushed: false,
         correct: value >= 0,
+        marked: false
       })),
     })),
     rowClues: board.map((row) => buildLineClues(row)),

@@ -13,6 +13,7 @@ export interface PicrossCellData {
     enabled: boolean;
     pushed: boolean;
     correct: boolean;
+    marked: boolean;
     text?: string;
 }
 
