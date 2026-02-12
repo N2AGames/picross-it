@@ -1,6 +1,6 @@
 {
   "name": "picross-image-processor",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A library to convert images to picross board representations by mapping all non-transparent pixels",
   "main": "dist/index.js",
   "module": "dist/index.js",
