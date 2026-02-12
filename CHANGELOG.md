@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.3 - 2026-02-12
+- Add marked property to cell model.
+
 ## 1.4.2 - 2026-02-12
 - Add clue completion method to allow calculate clue numbers completion individually.
 - Resolve test failures.
