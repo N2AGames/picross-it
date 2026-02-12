@@ -1,7 +1,7 @@
 export interface PicrossBoardData {
   rows: PicrossRowData[];
-  rowClues: number[][];
-  columnClues: number[][];
+  rowClues: PicrossClueData[][];
+  columnClues: PicrossClueData[][];
 }
 
 export interface PicrossRowData {
@@ -14,4 +14,9 @@ export interface PicrossCellData {
     pushed: boolean;
     correct: boolean;
     text?: string;
+}
+
+export interface PicrossClueData {
+    value: number;
+    color: string;
 }

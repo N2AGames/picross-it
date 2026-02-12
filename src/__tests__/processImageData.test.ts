@@ -1,5 +1,5 @@
 import { processImageData } from '../imageProcessor';
-import { PicrossBoardData } from '../picross-board-data.model';
+import { PicrossBoardData, PicrossClueData } from '../picross-board-data.model';
 import { indexToColor } from '../utils/pixelAnalysis';
 import fs from 'fs';
 import path from 'path';
@@ -91,29 +91,30 @@ function buildColorBoard(mask: number[][]): number[][] {
   );
 }
 
-function buildLineClues(values: number[]): number[] {
-  const clues: number[] = [];
-  let run = 0;
+function buildLineClues(values: number[]): PicrossClueData[] {
+  const clues: PicrossClueData[] = [];
+  let run = { value: 0, color: '' };
 
   for (const value of values) {
     if (value >= 0) {
-      run += 1;
-    } else if (run > 0) {
+      run.value += 1;
+      run.color = 'black'; // Placeholder, can be enhanced to track actual colors
+    } else if (run.value > 0) {
       clues.push(run);
-      run = 0;
+      run = { value: 0, color: '' };
     }
   }
 
-  if (run > 0) {
+  if (run.value > 0) {
     clues.push(run);
   }
 
-  return clues.length > 0 ? clues : [0];
+  return clues.length > 0 ? clues : [{ value: 0, color: '' }];
 }
 
-function buildColumnClues(board: number[][]): number[][] {
+function buildColumnClues(board: number[][]): PicrossClueData[][] {
   const size = board.length;
-  const clues: number[][] = [];
+  const clues: PicrossClueData[][] = [];
 
   for (let col = 0; col < size; col++) {
     const columnValues = board.map((row) => row[col]);
@@ -125,7 +126,7 @@ function buildColumnClues(board: number[][]): number[][] {
 
 function buildCellColor(value: number, colorMode: boolean): string {
   if (value < 0) {
-    return '#ffffff';
+    return '#d3d3d3';
   }
 
   if (!colorMode) {
@@ -141,7 +142,7 @@ function buildBoardData(board: number[][], colorMode: boolean): PicrossBoardData
     rows: board.map((row) => ({
       cells: row.map((value) => ({
         color: buildCellColor(value, colorMode),
-        enabled: value >= 0,
+        enabled: true,
         pushed: false,
         correct: value >= 0,
       })),
@@ -288,18 +289,18 @@ describe('processImageData', () => {
     const result = processImageData(imageData, { boardSize: 5 });
 
     expect(result.board.rowClues).toEqual([
-      [2, 1],
-      [0],
-      [3, 1],
-      [1, 2],
-      [2],
+      [{value: 2, color: 'black'}, {value: 1, color: 'black'}],
+      [{value: 0, color: ''}],
+      [{value: 3, color: 'black'}, {value: 1, color: 'black'}],
+      [{value: 1, color: 'black'}, {value: 2, color: 'black'}],
+      [{value: 2, color: 'black'}],
     ]);
     expect(result.board.columnClues).toEqual([
-      [1, 1],
-      [1, 2],
-      [1],
-      [1, 2],
-      [3],
+      [{value: 1, color: 'black'}, {value: 1, color: 'black'}],
+      [{value: 1, color: 'black'}, {value: 2, color: 'black'}],
+      [{value: 1, color: 'black'}],
+      [{value: 1, color: 'black'}, {value: 2, color: 'black'}],
+      [{value: 3, color: 'black'}],
     ]);
   });
 

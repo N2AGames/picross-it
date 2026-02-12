@@ -1,5 +1,5 @@
 import { ProcessingConfig, ProcessingResult } from './types';
-import { PicrossBoardData, PicrossCellData, PicrossRowData } from './picross-board-data.model';
+import { PicrossBoardData, PicrossCellData, PicrossClueData, PicrossRowData } from './picross-board-data.model';
 import {
   colorToIndex,
   getPixelData,
@@ -94,9 +94,9 @@ function getCellColor(value: number, colorMode: boolean): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-function buildColumnClues(boardMatrix: number[][]): number[][] {
+function buildColumnClues(boardMatrix: number[][]): PicrossClueData[][] {
   const size = boardMatrix.length;
-  const clues: number[][] = [];
+  const clues: PicrossClueData[][] = [];
 
   for (let col = 0; col < size; col++) {
     const columnValues = boardMatrix.map((row) => row[col]);
@@ -106,24 +106,25 @@ function buildColumnClues(boardMatrix: number[][]): number[][] {
   return clues;
 }
 
-function buildLineClues(values: number[]): number[] {
-  const clues: number[] = [];
-  let run = 0;
+function buildLineClues(values: number[]): PicrossClueData[] {
+  const clues: PicrossClueData[] = [];
+  let run = { value: 0, color: '' };
 
   for (const value of values) {
     if (value >= 0) {
-      run += 1;
-    } else if (run > 0) {
+      run.value += 1;
+      run.color = 'black'; // Placeholder, can be enhanced to track actual colors
+    } else if (run.value > 0) {
       clues.push(run);
-      run = 0;
+      run = { value: 0, color: '' };
     }
   }
 
-  if (run > 0) {
+  if (run.value > 0) {
     clues.push(run);
   }
 
-  return clues.length > 0 ? clues : [0];
+  return clues.length > 0 ? clues : [{ value: 0, color: '' }];
 }
 
 /**
