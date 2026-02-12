@@ -1,4 +1,4 @@
-import { processImageData } from '../imageProcessor';
+import { processImageData, recalculateClueColors } from '../imageProcessor';
 import { PicrossBoardData, PicrossClueData } from '../picross-board-data.model';
 import { indexToColor } from '../utils/pixelAnalysis';
 import fs from 'fs';
@@ -93,15 +93,15 @@ function buildColorBoard(mask: number[][]): number[][] {
 
 function buildLineClues(values: number[]): PicrossClueData[] {
   const clues: PicrossClueData[] = [];
-  let run = { value: 0, color: '' };
+  let run = { value: 0, completed: false };
 
   for (const value of values) {
     if (value >= 0) {
       run.value += 1;
-      run.color = 'black'; // Placeholder, can be enhanced to track actual colors
+      run.completed = false; // Placeholder, can be enhanced to track actual completion
     } else if (run.value > 0) {
       clues.push(run);
-      run = { value: 0, color: '' };
+      run = { value: 0, completed: false };
     }
   }
 
@@ -109,7 +109,7 @@ function buildLineClues(values: number[]): PicrossClueData[] {
     clues.push(run);
   }
 
-  return clues.length > 0 ? clues : [{ value: 0, color: '' }];
+  return clues.length > 0 ? clues : [{ value: 0, completed: false }];
 }
 
 function buildColumnClues(board: number[][]): PicrossClueData[][] {
@@ -289,18 +289,18 @@ describe('processImageData', () => {
     const result = processImageData(imageData, { boardSize: 5 });
 
     expect(result.board.rowClues).toEqual([
-      [{value: 2, color: 'black'}, {value: 1, color: 'black'}],
-      [{value: 0, color: ''}],
-      [{value: 3, color: 'black'}, {value: 1, color: 'black'}],
-      [{value: 1, color: 'black'}, {value: 2, color: 'black'}],
-      [{value: 2, color: 'black'}],
+      [{value: 2, completed: false}, {value: 1, completed: false}],
+      [{value: 0, completed: false}],
+      [{value: 3, completed: false}, {value: 1, completed: false}],
+      [{value: 1, completed: false}, {value: 2, completed: false}],
+      [{value: 2, completed: false}],
     ]);
     expect(result.board.columnClues).toEqual([
-      [{value: 1, color: 'black'}, {value: 1, color: 'black'}],
-      [{value: 1, color: 'black'}, {value: 2, color: 'black'}],
-      [{value: 1, color: 'black'}],
-      [{value: 1, color: 'black'}, {value: 2, color: 'black'}],
-      [{value: 3, color: 'black'}],
+      [{value: 1, completed: false}, {value: 1, completed: false}],
+      [{value: 1, completed: false}, {value: 2, completed: false}],
+      [{value: 1, completed: false}],
+      [{value: 1, completed: false}, {value: 2, completed: false}],
+      [{value: 3, completed: false}],
     ]);
   });
 
@@ -332,5 +332,42 @@ describe('processImageData', () => {
       path.join(artifactsDir, 'processImageData-spiral-color.png'),
       { colorMode: true }
     );
+  });
+
+  it('check clue completion status based on a solved board', () => {
+    const mask = [
+      [1, 1, 0, 1, 0],
+      [0, 0, 0, 0, 0],
+      [1, 1, 1, 0, 1],
+      [0, 1, 0, 1, 1],
+      [0, 0, 0, 1, 1],
+    ];
+    const boardData = buildBoardData(buildMonoBoard(mask), false);
+    const board: PicrossBoardData = {
+      rows: boardData.rows.map((row) => ({
+        cells: row.cells.map((cell) => ({
+          ...cell,
+          pushed: cell.correct,
+        })),
+      })),
+      rowClues: boardData.rowClues,
+      columnClues: boardData.columnClues,
+    };
+    expect(board.rows.every((row) => row.cells.every((cell) => cell.pushed === cell.correct))).toBe(true);
+    recalculateClueColors(board);
+    expect(board.rowClues).toEqual([
+      [{value: 2, completed: true}, {value: 1, completed: true}],
+      [{value: 0, completed: true}],
+      [{value: 3, completed: true}, {value: 1, completed: true}],
+      [{value: 1, completed: true}, {value: 2, completed: true}],
+      [{value: 2, completed: true}],
+    ]);
+    expect(board.columnClues).toEqual([
+      [{value: 1, completed: true}, {value: 1, completed: true}],
+      [{value: 1, completed: true}, {value: 2, completed: true}],
+      [{value: 1, completed: true}],
+      [{value: 1, completed: true}, {value: 2, completed: true}],
+      [{value: 3, completed: true}],
+    ]);
   });
 });

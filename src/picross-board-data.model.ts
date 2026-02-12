@@ -18,5 +18,5 @@ export interface PicrossCellData {
 
 export interface PicrossClueData {
     value: number;
-    color: string;
+    completed: boolean;
 }

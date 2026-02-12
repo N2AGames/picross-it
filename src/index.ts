@@ -6,6 +6,7 @@ export {
   processCanvasImage,
   processImageUrl,
   processImageFile,
+  recalculateClueColors,
 } from './imageProcessor';
 export * from './utils/pixelAnalysis';
 export * from './utils/imageAnalysis';

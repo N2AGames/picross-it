@@ -1,6 +1,10 @@
 # Changelog
 
-## 1.4.0 - 2026-02-11
+## 1.4.2 - 2026-02-12
+- Add clue completion method to allow calculate clue numbers completion individually.
+- Resolve test failures.
+
+## 1.4.1 - 2026-02-11
 - Change the color for empty cells to lightgrey.
 - Set all the cells enabled by default.
 

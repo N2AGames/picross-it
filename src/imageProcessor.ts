@@ -108,15 +108,15 @@ function buildColumnClues(boardMatrix: number[][]): PicrossClueData[][] {
 
 function buildLineClues(values: number[]): PicrossClueData[] {
   const clues: PicrossClueData[] = [];
-  let run = { value: 0, color: '' };
+  let run = { value: 0, completed: false };
 
   for (const value of values) {
     if (value >= 0) {
       run.value += 1;
-      run.color = 'black'; // Placeholder, can be enhanced to track actual colors
+      run.completed = false; // Placeholder, can be enhanced to track actual completion
     } else if (run.value > 0) {
       clues.push(run);
-      run = { value: 0, color: '' };
+      run = { value: 0, completed: false };
     }
   }
 
@@ -124,7 +124,80 @@ function buildLineClues(values: number[]): PicrossClueData[] {
     clues.push(run);
   }
 
-  return clues.length > 0 ? clues : [{ value: 0, color: '' }];
+  return clues.length > 0 ? clues : [{ value: 0, completed: false }];
+}
+
+type LineRunState = {
+  length: number;
+  solved: boolean;
+};
+
+function buildLineRunStates(cells: PicrossCellData[]): LineRunState[] {
+  const runs: LineRunState[] = [];
+  let runLength = 0;
+  let runSolved = true;
+
+  for (const cell of cells) {
+    if (cell.correct) {
+      runLength += 1;
+      if (!(cell.pushed && cell.correct)) {
+        runSolved = false;
+      }
+    } else if (runLength > 0) {
+      runs.push({ length: runLength, solved: runSolved });
+      runLength = 0;
+      runSolved = true;
+    }
+  }
+
+  if (runLength > 0) {
+    runs.push({ length: runLength, solved: runSolved });
+  }
+
+  return runs;
+}
+
+function updateClueColorsForLine(
+  cells: PicrossCellData[],
+  clues: PicrossClueData[]
+): void {
+  const runs = buildLineRunStates(cells);
+  const noRuns = runs.length === 0;
+
+  clues.forEach((clue, index) => {
+    let solved = false;
+
+    if (clue.value === 0) {
+      solved = noRuns;
+    } else {
+      const run = runs[index];
+      solved = !!run && run.length === clue.value && run.solved;
+    }
+
+    clue.completed = solved;
+  });
+}
+
+/**
+ * Recalculate clue colors based on resolved cells.
+ */
+export function recalculateClueColors(board: PicrossBoardData): void {
+  const rows = board.rows.map((row) => row.cells);
+  rows.forEach((cells, rowIndex) => {
+    const clues = board.rowClues[rowIndex];
+    if (clues) {
+      updateClueColorsForLine(cells, clues);
+    }
+  });
+
+  const size = rows.length;
+  for (let col = 0; col < size; col++) {
+    const columnCells = rows.map((row) => row[col]).filter(Boolean) as PicrossCellData[];
+    const clues = board.columnClues[col];
+    if (columnCells.length > 0 && clues) {
+      updateClueColorsForLine(columnCells, clues);
+    }
+  }
 }
 
 /**
